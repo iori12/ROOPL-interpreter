@@ -1,0 +1,66 @@
+実行例(parserのみ) P22
+
+parse("
+  class Program
+    int result
+    int n
+  
+    method main()
+      n ^= 4
+        construct Fib f
+          call f::fib(n)
+          call f::get(result)
+          uncall f::fib(n)
+        destruct f 
+  class Fib
+    int x1
+    int x2
+  
+    method fib(int n)
+      if n = 0 then
+        x1 ^= 1
+        x2 ^= 1
+      else
+        n -= 1
+        call fib(n)
+        x1 += x2
+        x1 <=> x2
+      fi x1 = x2
+    method get(int out)  
+      out ^= x2 ;");;
+      
+  - : Syntax.prog =
+Syntax.Cl
+ [Syntax.Class (Syntax.ClassId "Program",
+   [(Syntax.Int, Syntax.Var "result"); (Syntax.Int, Syntax.Var "n")],
+   [Syntax.Method (Syntax.MethId "main", [],
+     Syntax.Seq (Syntax.Assign (Syntax.Var "n", Syntax.Xor, Syntax.Const 4),
+      Syntax.Construct (Syntax.ClassId "Fib", Syntax.Var "f",
+       Syntax.Seq
+        (Syntax.Call (Syntax.Var "f", Syntax.MethId "fib", [Syntax.Var "n"]),
+        Syntax.Seq
+         (Syntax.Call (Syntax.Var "f", Syntax.MethId "get",
+           [Syntax.Var "result"]),
+         Syntax.UnCall (Syntax.Var "f", Syntax.MethId "fib",
+          [Syntax.Var "n"]))),
+       Syntax.Var "f")))]);
+  Syntax.Class (Syntax.ClassId "Fib",
+   [(Syntax.Int, Syntax.Var "x1"); (Syntax.Int, Syntax.Var "x2")],
+   [Syntax.Method (Syntax.MethId "fib", [(Syntax.Int, Syntax.Var "n")],
+     Syntax.If
+      (Syntax.Op (Syntax.EVar (Syntax.Var "n"), Syntax.Equal, Syntax.Const 0),
+      Syntax.Seq
+       (Syntax.Assign (Syntax.Var "x1", Syntax.Xor, Syntax.Const 1),
+       Syntax.Assign (Syntax.Var "x2", Syntax.Xor, Syntax.Const 1)),
+      Syntax.Seq
+       (Syntax.Assign (Syntax.Var "n", Syntax.Minus, Syntax.Const 1),
+       Syntax.Seq (Syntax.LocalCall (Syntax.MethId "fib", [Syntax.Var "n"]),
+        Syntax.Seq
+         (Syntax.Assign (Syntax.Var "x1", Syntax.Plus,
+           Syntax.EVar (Syntax.Var "x2")),
+         Syntax.Swap (Syntax.Var "x1", Syntax.Var "x2")))),
+      Syntax.Op (Syntax.EVar (Syntax.Var "x1"), Syntax.Equal,
+       Syntax.EVar (Syntax.Var "x2"))));
+    Syntax.Method (Syntax.MethId "get", [(Syntax.Int, Syntax.Var "out")],
+     Syntax.Assign (Syntax.Var "out", Syntax.Xor,
+      Syntax.EVar (Syntax.Var "x2")))])]
